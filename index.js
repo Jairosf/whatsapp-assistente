@@ -25,19 +25,22 @@ app.post("/webhook", async (req, res) => {
   console.log(`Texto: ${text}`);
 
   try {
-    // Enviar pergunta para o Gemini
+    // Corrigido: chamada para Gemini com estrutura correta
     const geminiResponse = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
-        contents: [{ parts: [{ text: text }] }]
+        contents: [
+          {
+            role: "user",
+            parts: [{ text }]
+          }
+        ]
       }
     );
 
-    const reply = geminiResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não entendi.";
-
+    const reply = geminiResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui entender.";
     console.log("🤖 Resposta da IA:", reply);
 
-    // Enviar resposta via UltraMSG
     await axios.post(`https://api.ultramsg.com/${ULTRAMSG_INSTANCE_ID}/messages/chat`, null, {
       params: {
         token: ULTRAMSG_TOKEN,

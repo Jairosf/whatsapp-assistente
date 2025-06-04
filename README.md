@@ -1,1 +1,1 @@
-# Assistente WhatsApp com IA Gemini + UltraMSG
+# Assistente WhatsApp com IA Gemini (corrigido)
