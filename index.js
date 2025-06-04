@@ -1,18 +1,14 @@
-import express from "express";
-import dotenv from "dotenv";
-import axios from "axios";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
+const express = require("express");
+const dotenv = require("dotenv");
+const axios = require("axios");
 dotenv.config();
+
 const app = express();
 app.use(express.json());
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 const ULTRAMSG_INSTANCE_ID = process.env.ULTRAMSG_INSTANCE_ID;
 const ULTRAMSG_TOKEN = process.env.ULTRAMSG_TOKEN;
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
 app.post("/webhook", async (req, res) => {
   const message = req.body;
@@ -29,9 +25,30 @@ app.post("/webhook", async (req, res) => {
   console.log(`Texto: ${text}`);
 
   try {
-    const result = await model.generateContent(text);
-    const response = await result.response;
-    const reply = response.text();
+    const completion = await axios.post(
+      "https://api.deepseek.com/v1/chat/completions",
+      {
+        model: "deepseek-chat",
+        messages: [
+          {
+            role: "system",
+            content: "Você é uma assistente pessoal que responde de forma simpática, direta e clara."
+          },
+          {
+            role: "user",
+            content: text
+          }
+        ]
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${DEEPSEEK_API_KEY}`
+        }
+      }
+    );
+
+    const reply = completion.data.choices?.[0]?.message?.content || "Desculpe, não entendi.";
 
     console.log("🤖 Resposta da IA:", reply);
 
